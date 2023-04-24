@@ -5,7 +5,7 @@ import { Forms } from "./components/Forms";
 function App() {
   return (
     <>
-     <BrowserRouter>
+     <BrowserRouter basename="/client">
       <Routes>
         <Route index  element={<Forms />} />
         
