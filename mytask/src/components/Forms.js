@@ -5,17 +5,25 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState } from "react";
 import { RadioGroup } from "@headlessui/react";
 import axios from "axios";
+import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import pic from "../../src/Assets/Rectangle 1965.png";
 import { Gbutton } from "../Global/Gbutton";
 const plans = ["Statup", "Business", "Enterprise"];
 export const Forms = () => {
+  const {
+    register,
+    formState: { errors },
+    handleSubmit
+  } = useForm();
+  const onSubmit = (data) => console.log(data);
   let [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState("step1");
   const [jobdata, setjobdata] = useState([]);
   const [editData, setEditData] = useState(false);
+
   const [radio, setRadio] = useState(false);
-const [putData, setPutData] = useState([])
+  const [putData, setPutData] = useState([]);
   const [jobDetails, setJobdetails] = React.useState([
     {
       Job_title: "Job_title 1",
@@ -39,8 +47,6 @@ const [putData, setPutData] = useState([])
       .catch((err) => console.log(err));
   }, []);
 
-
-
   function submitHandler() {
     axios
       .post(
@@ -51,18 +57,25 @@ const [putData, setPutData] = useState([])
         setjobdata([...jobdata, res.data]);
       })
       .catch((err) => console.log(err));
+
+      setIsOpen(false)
   }
 
-  // const postData =(newData)=>{
-  //   axios.post('https://643e2811c72fda4a0beeea40.mockapi.io/techtask/Jobpost', newData).then(res=>{setJobdetails([...jobDetails,res.data])}).catch(err=>{console.log(err)})
-  // }
+  function editHandler() {
+    axios
+      .put(
+        "https://643e2811c72fda4a0beeea40.mockapi.io/techtask/Jobpost/" +
+          putData.id,
+        putData
+      )
+      .then((res) => {
+        setjobdata([...jobdata, res.data]);
+      })
+      .catch((err) => console.log(err));
 
-  // const onChangehandler = (e) => {
-  //   setJobdetails((prevState) => {
-  //     return { ...prevState, [e.target.name]: e.target.value };
-  //   });
-  // };
-  console.log(jobDetails);
+    toast("Successfully Updated");
+    setIsOpen(false);
+  }
   function closeModal() {
     setIsOpen(false);
   }
@@ -77,7 +90,7 @@ const [putData, setPutData] = useState([])
         <button
           type="button"
           onClick={openModal}
-          className="rounded-md bg-black bg-opacity-20 px-4 py-2 text-sm font-medium text-white hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+          className="rounded-md bg-[#3b82f6]  px-4 py-2 text-sm font-medium text-white hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
         >
           Create Job
         </button>
@@ -128,11 +141,13 @@ const [putData, setPutData] = useState([])
                             <Typography
                               classname="mt-[24px] font-famcam"
                               name="Job title"
+                              span="*"
                             />
                             <input
                               className="mt-[4px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
                               name="Job_title"
                               type="text"
+                              required
                               onChange={(e) =>
                                 setJobdetails({
                                   ...jobDetails,
@@ -141,12 +156,18 @@ const [putData, setPutData] = useState([])
                               }
                               // value={jobdata.Job_title}
                               placeholder="ex. UX UI Designer"
+                              {...register("Job_title", { required: true })}
+                              aria-invalid={errors.Job_title ? "true" : "false"}
                             />
+                            {errors.firstName?.type === "required" && (
+                              <p role="alert">First name is required</p>
+                            )}
                           </div>
                           <div className="mx-8">
                             <Typography
                               classname="mt-[24px] font-famcam"
                               name="Company name"
+                              span="*"
                             />
                             <input
                               className="mt-[4px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
@@ -166,11 +187,13 @@ const [putData, setPutData] = useState([])
                             <Typography
                               classname="mt-[24px] font-famcam"
                               name="Industry"
+                              span="*"
                             />
                             <input
                               className="mt-[4px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
                               name="Industry"
                               type="text"
+                              required
                               onChange={(e) =>
                                 setJobdetails({
                                   ...jobDetails,
@@ -222,6 +245,7 @@ const [putData, setPutData] = useState([])
                             {" "}
                             <button
                               onClick={() => {
+                                handleSubmit(onSubmit);
                                 setIsOpen(true);
                                 setStep("step2");
                               }}
@@ -387,22 +411,12 @@ const [putData, setPutData] = useState([])
                           <div className="mx-8  mb-8 mt-20">
                             {" "}
                             <div
-                              onClick={() => {
-                                axios
-                                  .post(
-                                    "https://643e2811c72fda4a0beeea40.mockapi.io/techtask/Jobpost",
-                                    jobDetails
-                                  )
-                                  .then((res) => {
-                                    setjobdata([...jobdata, res.data]);
-                                  })
-                                  .catch((err) => console.log(err));
-
-                                console.log("hello");
-                              }}
-                              className="float-right w-[68px] h-[40px] rounded-[6px] align-self justify-center  text-white text-base font-medium bg-sky-500/100"
+                              onClick={submitHandler}
+                              className="float-right w-[68px] h-[40px] rounded-[6px] relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900  text-white text-base font-medium bg-sky-500/100"
                             >
-                              <p className="">Save</p>
+                              <span className="relative cursor-pointer px-5 py-2.5 font-medium famcam transition-all ease-in duration-75 bg-sky-500/100">
+                                Save
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -420,346 +434,343 @@ const [putData, setPutData] = useState([])
 
       {editData && (
         <>
-        {putData?.map((item =>
-        <Transition key={item.id} appear show={isOpen} as={Fragment}>
-          <Dialog as="div" className="relative z-10" onClose={closeModal}>
-            <Transition.Child
-              as={Fragment}
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <div className="fixed inset-0 bg-black bg-opacity-25" />
-            </Transition.Child>
+          <Transition appear show={isOpen} as={Fragment}>
+            <Dialog as="div" className="relative z-10" onClose={closeModal}>
+              <Transition.Child
+                as={Fragment}
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-black bg-opacity-25" />
+              </Transition.Child>
 
-            <div className="fixed inset-0 overflow-y-auto">
-              <div className="flex min-h-full items-center justify-center p-4 text-center">
-                <Transition.Child
-                  as={Fragment}
-                  enterFrom="opacity-0 scale-95"
-                  enterTo="opacity-100 scale-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100 scale-100"
-                  leaveTo="opacity-0 scale-95"
-                >
-                  <Dialog.Panel className="w-[577px]  transform overflow-hidden rounded-[10px] bg-white  text-left align-middle shadow-xl transition-all">
-                    <form
-                      type="submit"
-                      className="bg-white h-[564px] shadow-md rounded-[10px] "
-                    >
-                      <div className="">
-                        {step === "step1" ? (
-                          <>
-                            <div className="flex  justify-between">
-                              <Typography
-                                classname="ml-8 mt-[32px] text-[20px] font-famcam font-normal"
-                                name="Create a job"
-                              />
-                              <Typography
-                                classname="mr-8 mt-[32px]  text-[16px] font-famcam font-medium  "
-                                name="Step 1"
-                              />
-                            </div>
-                            <div className="mx-8">
-                              <Typography
-                                classname="mt-[24px] font-famcam"
-                                name="Job title"
-                              />
-                              <input
-                                className="mt-[4px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
-                                name="Job_title"
-                                type="text"
-                                onChange={(e) =>
-                                  setJobdetails({
-                                    ...jobDetails,
-                                    Job_title: e.target.value
-                                  })
-                                }
-                                // value={jobdata.Job_title}
-                                placeholder="ex. UX UI Designer"
-                              />
-                            </div>
-                            <div className="mx-8">
-                              <Typography
-                                classname="mt-[24px] font-famcam"
-                                name="Company name"
-                              />
-                              <input
-                                className="mt-[4px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
-                                name="Company_name"
-                                onChange={(e) =>
-                                  setJobdetails({
-                                    ...jobDetails,
-                                    Company_name: e.target.value
-                                  })
-                                }
-                                type="text"
-                              
-                                placeholder="ex. Google"
-                              />
-                            </div>
-                            <div className="mx-8">
-                              <Typography
-                                classname="mt-[24px] font-famcam"
-                                name="Industry"
-                              />
-                              <input
-                                className="mt-[4px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
-                                name="Industry"
-                                type="text"
-                                onChange={(e) =>
-                                  setJobdetails({
-                                    ...jobDetails,
-                                    Industry: e.target.value
-                                  })
-                                }
-                                placeholder="ex. Information Technology "
-                              />
-                            </div>
-                            <div className="mx-8 flex justify-between">
-                              <div>
+              <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-center justify-center p-4 text-center">
+                  <Transition.Child
+                    as={Fragment}
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <Dialog.Panel className="w-[577px]  transform overflow-hidden rounded-[10px] bg-white  text-left align-middle shadow-xl transition-all">
+                      <form
+                        type="submit"
+                        className="bg-white h-[564px] shadow-md rounded-[10px] "
+                      >
+                        <div className="">
+                          {step === "step1" ? (
+                            <>
+                              <div className="flex  justify-between">
+                                <Typography
+                                  classname="ml-8 mt-[32px] text-[20px] font-famcam font-normal"
+                                  name="Create a job"
+                                />
+                                <Typography
+                                  classname="mr-8 mt-[32px]  text-[16px] font-famcam font-medium  "
+                                  name="Step 1"
+                                />
+                              </div>
+                              <div className="mx-8">
                                 <Typography
                                   classname="mt-[24px] font-famcam"
-                                  name="Location"
+                                  name="Job title"
                                 />
                                 <input
-                                  className="mt-[4px] w-[244px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
-                                  name="Location"
+                                  className="mt-[4px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
+                                  name="Job_title"
                                   type="text"
-                                  placeholder="ex. Chennai "
+                                  value={putData.Job_title}
                                   onChange={(e) =>
-                                    setJobdetails({
-                                      ...jobDetails,
-                                      Location: e.target.value
+                                    setPutData({
+                                      ...putData,
+                                      Job_title: e.target.value
                                     })
                                   }
+                                  // value={jobdata.Job_title}
+                                  placeholder="ex. UX UI Designer"
                                 />
                               </div>
-                              <div>
+                              <div className="mx-8">
                                 <Typography
                                   classname="mt-[24px] font-famcam"
-                                  name="Remote type"
+                                  name="Company name"
                                 />
                                 <input
-                                  className="mt-[4px] w-[244px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
-                                  name="Remote_type"
+                                  className="mt-[4px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
+                                  name="Company_name"
+                                  value={putData.Company_name}
+                                  onChange={(e) =>
+                                    setPutData({
+                                      ...putData,
+                                      Company_name: e.target.value
+                                    })
+                                  }
                                   type="text"
-                                  onChange={(e) =>
-                                    setJobdetails({
-                                      ...jobDetails,
-                                      Remote_type: e.target.value
-                                    })
-                                  }
-                                  placeholder="ex. In-office "
+                                  placeholder="ex. Google"
                                 />
                               </div>
-                            </div>
-                            <div className="mx-8  mb-8 mt-20">
-                              {" "}
-                              <button
-                                onClick={() => {
-                                  setIsOpen(true);
-                                  setStep("step2");
-                                }}
-                                className="float-right w-[68px] h-[40px] rounded-[6px] text-white text-base font-medium bg-sky-500/100"
-                              >
-                                Next
-                              </button>
-                            </div>
-                          </>
-                        ) : step === "step2" ? (
-                          <div>
-                            <div className="flex  justify-between">
-                              <Typography
-                                classname="ml-8 mt-[32px] text-[20px] font-famcam  font-normal"
-                                name="Create a job"
-                              />
-                              <Typography
-                                classname="mr-8 mt-[32px]  text-[16px] font-famcam font-normal  "
-                                name="Step 2"
-                              />
-                            </div>
-                            <div className="mx-8 flex justify-between">
-                              <div>
+                              <div className="mx-8">
                                 <Typography
                                   classname="mt-[24px] font-famcam"
-                                  name="Experience"
+                                  name="Industry"
                                 />
                                 <input
-                                  className="mt-[4px] w-[244px] font-famcam text-sm font-normal appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
-                                  name="Min_Exp"
-                                  type="number"
-                                  placeholder="Minimum"
+                                  className="mt-[4px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
+                                  name="Industry"
+                                  type="text"
+                                  value={putData.Industry}
                                   onChange={(e) =>
-                                    setJobdetails({
-                                      ...jobDetails,
-                                      Min_Exp: e.target.value
+                                    setPutData({
+                                      ...putData,
+                                      Industry: e.target.value
                                     })
                                   }
+                                  placeholder="ex. Information Technology "
                                 />
                               </div>
-                              <div>
-                                <Typography
-                                  classname="mt-[24px] font-famcam"
-                                  name=""
-                                />
-                                <input
-                                  className="mt-[28px] w-[244px] font-famcam text-sm font-normal appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
-                                  name="Max_Exp"
-                                  type="number"
-                                  placeholder="Maximum"
-                                  onChange={(e) =>
-                                    setJobdetails({
-                                      ...jobDetails,
-                                      Max_Exp: e.target.value
-                                    })
-                                  }
-                                />
-                              </div>
-                            </div>
-                            <div className="mx-8 flex align-center justify-between">
-                              <div>
-                                <Typography
-                                  classname="mt-[24px] font-famcam"
-                                  name="Salary"
-                                />
-                                <input
-                                  className="mt-[4px] w-[244px] font-famcam text-sm font-normal appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
-                                  name="Min_Sal"
-                                  type="number"
-                                  placeholder="Minimum"
-                                  onChange={(e) =>
-                                    setJobdetails({
-                                      ...jobDetails,
-                                      Min_Sal: e.target.value
-                                    })
-                                  }
-                                />
-                              </div>
-                              <div>
-                                <Typography
-                                  classname="mt-[24px] font-famcam"
-                                  name=""
-                                />
-                                <input
-                                  className="mt-[28px] w-[244px] font-famcam text-sm font-normal appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
-                                  name="Max_Sal"
-                                  type="number"
-                                  placeholder="Maximum"
-                                  onChange={(e) =>
-                                    setJobdetails({
-                                      ...jobDetails,
-                                      Max_Sal: e.target.value
-                                    })
-                                  }
-                                />
-                              </div>
-                            </div>
-                            <div className="mx-8">
-                              <Typography
-                                classname="mt-[24px] font-famcam"
-                                name="Total employee"
-                              />
-                              <input
-                                className="mt-[4px] font-famcam text-sm font-normal appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
-                                name="Total_Employee"
-                                type="number"
-                                placeholder="ex. 100"
-                                onChange={(e) =>
-                                  setJobdetails({
-                                    ...jobDetails,
-                                    Total_Employee: e.target.value
-                                  })
-                                }
-                              />
-                            </div>
-                            <div className="mx-8">
-                              <Typography
-                                classname="mt-[24px] font-famcam"
-                                name="Apply Type"
-                              />
-                              <div className="flex justify-start">
-                                <div class="flex items-center ">
-                                  <input
-                                    id="bordered-radio-1"
-                                    type="radio"
-                                    value={true}
-                                    onChange={(e) => {
-                                      setJobdetails({
-                                        ...jobDetails,
-                                        Apply_type: e.target.value
-                                      });
-                                    }}
-                                    checked={radio === true}
-                                    name="Apply_type"
-                                    class="w-5 h-5 text-blue-600   border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 focus:ring-2 "
+                              <div className="mx-8 flex justify-between">
+                                <div>
+                                  <Typography
+                                    classname="mt-[24px] font-famcam"
+                                    name="Location"
                                   />
-                                  <label class="w-full ml-1 mr-4 py-4 ml-2 text-sm font-famcam leading-5 font-normal text-gray-900 dark:text-gray-300">
-                                    Quick apply
-                                  </label>
+                                  <input
+                                    className="mt-[4px] w-[244px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
+                                    name="Location"
+                                    type="text"
+                                    value={putData.Location}
+                                    placeholder="ex. Chennai "
+                                    onChange={(e) =>
+                                      setPutData({
+                                        ...putData,
+                                        Location: e.target.value
+                                      })
+                                    }
+                                  />
                                 </div>
-                                <div class="flex items-center  ">
-                                  <input
-                                    checked={radio === false}
-                                    id="bordered-radio-2"
-                                    onChange={(e) => {
-                                      setJobdetails({
-                                        ...jobDetails,
-                                        Apply_type: e.target.value
-                                      });
-                                    }}
-                                    type="radio"
-                                    value=""
-                                    name="Apply_type"
-                                    className="w-5 h-5 text-blue-600   border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 focus:ring-2  "
+                                <div>
+                                  <Typography
+                                    classname="mt-[24px] font-famcam"
+                                    name="Remote type"
                                   />
-                                  <label className="w-full ml-1 mr-4 py-4 ml-2 text-sm font-famcam leading-5 font-normal text-gray-900 dark:text-gray-300">
-                                    External apply
-                                  </label>
+                                  <input
+                                    className="mt-[4px] w-[244px] font-famcam appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
+                                    name="Remote_type"
+                                    type="text"
+                                    value={putData.Remote_type}
+                                    onChange={(e) =>
+                                      setPutData({
+                                        ...putData,
+                                        Remote_type: e.target.value
+                                      })
+                                    }
+                                    placeholder="ex. In-office "
+                                  />
                                 </div>
                               </div>
-                            </div>
-
-                            <div className="mx-8  mb-8 mt-20">
-                              {" "}
-                              <div
-                                onClick={() => {
-                                  axios
-                                    .post(
-                                      "https://643e2811c72fda4a0beeea40.mockapi.io/techtask/Jobpost",
-                                      jobDetails
-                                    )
-                                    .then((res) => {
-                                      setjobdata([...jobdata, res.data]);
+                              <div className="mx-8  mb-8 mt-20">
+                                {" "}
+                                <button
+                                  onClick={() => {
+                                    setIsOpen(true);
+                                    setStep("step2");
+                                  }}
+                                  className="float-right w-[68px] h-[40px] rounded-[6px] text-white text-base font-medium bg-sky-500/100"
+                                >
+                                  Next
+                                </button>
+                              </div>
+                            </>
+                          ) : step === "step2" ? (
+                            <div>
+                              <div className="flex  justify-between">
+                                <Typography
+                                  classname="ml-8 mt-[32px] text-[20px] font-famcam  font-normal"
+                                  name="Create a job"
+                                />
+                                <Typography
+                                  classname="mr-8 mt-[32px]  text-[16px] font-famcam font-normal  "
+                                  name="Step 2"
+                                />
+                              </div>
+                              <div className="mx-8 flex justify-between">
+                                <div>
+                                  <Typography
+                                    classname="mt-[24px] font-famcam"
+                                    name="Experience"
+                                  />
+                                  <input
+                                    className="mt-[4px] w-[244px] font-famcam text-sm font-normal appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
+                                    name="Min_Exp"
+                                    type="number"
+                                    value={putData.Min_Exp}
+                                    placeholder="Minimum"
+                                    onChange={(e) =>
+                                      setPutData({
+                                        ...putData,
+                                        Min_Exp: e.target.value
+                                      })
+                                    }
+                                  />
+                                </div>
+                                <div>
+                                  <Typography
+                                    classname="mt-[24px] font-famcam"
+                                    name=""
+                                  />
+                                  <input
+                                    className="mt-[28px] w-[244px] font-famcam text-sm font-normal appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
+                                    name="Max_Exp"
+                                    type="number"
+                                    value={putData.Max_Exp}
+                                    placeholder="Maximum"
+                                    onChange={(e) =>
+                                      setPutData({
+                                        ...putData,
+                                        Max_Exp: e.target.value
+                                      })
+                                    }
+                                  />
+                                </div>
+                              </div>
+                              <div className="mx-8 flex align-center justify-between">
+                                <div>
+                                  <Typography
+                                    classname="mt-[24px] font-famcam"
+                                    name="Salary"
+                                  />
+                                  <input
+                                    className="mt-[4px] w-[244px] font-famcam text-sm font-normal appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
+                                    name="Min_Sal"
+                                    type="number"
+                                    value={putData.Min_Sal}
+                                    placeholder="Minimum"
+                                    onChange={(e) =>
+                                      setPutData({
+                                        ...putData,
+                                        Min_Sal: e.target.value
+                                      })
+                                    }
+                                  />
+                                </div>
+                                <div>
+                                  <Typography
+                                    classname="mt-[24px] font-famcam"
+                                    name=""
+                                  />
+                                  <input
+                                    className="mt-[28px] w-[244px] font-famcam text-sm font-normal appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
+                                    name="Max_Sal"
+                                    value={putData.Max_Sal}
+                                    type="number"
+                                    placeholder="Maximum"
+                                    onChange={(e) =>
+                                      setPutData({
+                                        ...putData,
+                                        Max_Sal: e.target.value
+                                      })
+                                    }
+                                  />
+                                </div>
+                              </div>
+                              <div className="mx-8">
+                                <Typography
+                                  classname="mt-[24px] font-famcam"
+                                  name="Total employee"
+                                />
+                                <input
+                                  className="mt-[4px] font-famcam text-sm font-normal appearance-none border border-gray-300 rounded-md py-2 px-3 w-full leading-tight focus:outline-none focus:shadow-outline"
+                                  name="Total_Employee"
+                                  type="number"
+                                  value={putData.Total_Employee}
+                                  placeholder="ex. 100"
+                                  onChange={(e) =>
+                                    setJobdetails({
+                                      ...jobDetails,
+                                      Total_Employee: e.target.value
                                     })
-                                    .catch((err) => console.log(err));
+                                  }
+                                />
+                              </div>
+                              <div className="mx-8">
+                                <Typography
+                                  classname="mt-[24px] font-famcam"
+                                  name="Apply Type"
+                                />
+                                <div className="flex justify-start">
+                                  <div class="flex items-center ">
+                                    <input
+                                      id="bordered-radio-1"
+                                      type="radio"
+                                      value={putData.Apply_type}
+                                      onChange={(e) => {
+                                        setPutData({
+                                          ...putData,
+                                          Apply_type: e.target.value
+                                        });
+                                      }}
+                                      checked={radio === true}
+                                      name="Apply_type"
+                                      class="w-5 h-5 text-blue-600   border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 focus:ring-2 "
+                                    />
+                                    <label class="w-full ml-1 mr-4 py-4 ml-2 text-sm font-famcam leading-5 font-normal text-gray-900 dark:text-gray-300">
+                                      Quick apply
+                                    </label>
+                                  </div>
+                                  <div class="flex items-center  ">
+                                    <input
+                                      checked={radio === false}
+                                      id="bordered-radio-2"
+                                      onChange={(e) => {
+                                        setPutData({
+                                          ...putData,
+                                          Apply_type: e.target.value
+                                        });
+                                      }}
+                                      type="radio"
+                                      value={putData.Apply_type}
+                                      name="Apply_type"
+                                      className="w-5 h-5 text-blue-600   border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 focus:ring-2  "
+                                    />
+                                    <label className="w-full ml-1 mr-4 py-4 ml-2 text-sm font-famcam leading-5 font-normal text-gray-900 dark:text-gray-300">
+                                      External apply
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
 
-                                  console.log("hello");
-                                }}
-                                className="float-right w-[68px] h-[40px] rounded-[6px] align-self justify-center  text-white text-base font-medium bg-sky-500/100"
-                              >
-                                <p className="">Updata</p>
+                              <div className="mx-8  mb-8 mt-20">
+                                {" "}
+                                <div
+                                  onClick={editHandler}
+                                  className="float-right w-[68px] h-[40px] rounded-[6px] relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900  text-white text-base font-medium bg-sky-500/100"
+                                >
+                                  <span className="relative cursor-pointer px-5 py-2.5 font-medium famcam transition-all ease-in duration-75 bg-sky-500/100">
+                                    Update
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ) : (
-                          <></>
-                        )}
-                      </div>
-                    </form>
-                  </Dialog.Panel>
-                </Transition.Child>
+                          ) : (
+                            <></>
+                          )}
+                        </div>
+                      </form>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
               </div>
-            </div>
-          </Dialog>
-        </Transition>
-         ))}
-         </>
+            </Dialog>
+          </Transition>
+        </>
       )}
       <div>
-        <div className="grid grid-cols-2 gap-x-8">
+        <div className="grid grid-cols-2 mt-4 gap-x-8">
           {jobdata?.map((item) => (
             <div
               key={item.id}
@@ -815,9 +826,9 @@ const [putData, setPutData] = useState([])
                             fill="#3b82f6"
                             className="w-6 h-6 mb-3 float-right cursor-pointer"
                             onClick={() => {
-                              
+                              setPutData(item);
                               setIsOpen(true);
-                             setEditData(true)
+                              setEditData(true);
                             }}
                           >
                             <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" />
@@ -834,7 +845,6 @@ const [putData, setPutData] = useState([])
                                   toast.success("Job Post Deleted");
                                 });
                             }}
-
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
                             fill="#D86161"

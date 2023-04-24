@@ -17,7 +17,7 @@ export const Typography = (props) => {
           padding:{Padding},
           margin:{Margin}
         }}
-      >{name} <span style={{color:{spancolor}}}>{span}</span></p>
+      >{name}  <span style={{color:"#D86161"}}>{span}</span></p>
     </div>
   );
 };
